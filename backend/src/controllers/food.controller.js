@@ -21,4 +21,11 @@ async function createFood(req, res) {
   });
 }
 
-module.exports = { createFood };
+async function getFoodItems(req, res) {
+  const foodItems = await foodModel.find({});
+  res.status(200).json({
+    foodItems: foodItems,
+  });
+}
+
+module.exports = { createFood, getFoodItems };
