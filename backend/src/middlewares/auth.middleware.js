@@ -3,7 +3,7 @@ const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 
 async function authFoodPartnerMiddleware(req, res, next) {
-  const token = req.cookies.token;
+  const token = req.cookies.partner_token || req.cookies.token;
 
   if (!token) {
     return res.status(401).json({ message: "Please login as food partner" });

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Home = () => {
   const containerRef = useRef(null);
   const videoRefs = useRef([]);
+  const navigate = useNavigate();
 
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +101,39 @@ const Home = () => {
 
   return (
     <div ref={containerRef} className="reels">
+      {/* Top-right logout button */}
+      <button
+        onClick={async () => {
+          try {
+            await axios.get("http://localhost:3000/api/auth/user/logout", {
+              withCredentials: true,
+            });
+          } catch (e) {
+            // ignore errors, proceed to clear client state
+            console.error("Logout error:", e);
+          }
+          try {
+            localStorage.removeItem("user");
+          } catch (e) {
+            console.error("LocalStorage clear error:", e);
+          }
+          navigate("/user/login");
+        }}
+        style={{
+          position: "fixed",
+          top: 12,
+          right: 12,
+          padding: "0.5rem 0.75rem",
+          background: "#ef4444",
+          color: "#fff",
+          border: "none",
+          borderRadius: 6,
+          cursor: "pointer",
+          zIndex: 50,
+        }}
+      >
+        Logout
+      </button>
       {videos.map((item, index) => (
         <section key={item._id} className="reel">
           <video

@@ -83,7 +83,9 @@ async function registerFoodPartner(req, res) {
     { foodPartnerId: foodPartner._id },
     process.env.JWT_SECRET,
   );
+  // Set both for backward compatibility; partner_token preferred by middleware
   res.cookie("token", token);
+  res.cookie("partner_token", token);
   res.status(201).json({
     message: "Food partner registered successfully",
     foodPartner: {
@@ -111,7 +113,9 @@ async function loginFoodPartner(req, res) {
     { foodPartnerId: foodPartner._id },
     process.env.JWT_SECRET,
   );
+  // Set both for backward compatibility; partner_token preferred by middleware
   res.cookie("token", token);
+  res.cookie("partner_token", token);
   res.status(200).json({
     message: "Login successful",
     foodPartner: {
@@ -124,6 +128,7 @@ async function loginFoodPartner(req, res) {
 
 function logoutFoodPartner(req, res) {
   res.clearCookie("token");
+  res.clearCookie("partner_token");
   res.status(200).json({ message: "Logout successful" });
 }
 
@@ -141,6 +146,19 @@ async function getFoodPartnerProfile(req, res) {
   }
 }
 
+// Current logged-in food partner profile
+async function getCurrentFoodPartner(req, res) {
+  try {
+    // req.foodPartner is set by authFoodPartnerMiddleware
+    const partner = await foodPartnerModel
+      .findById(req.foodPartner._id)
+      .select("-password");
+    return res.status(200).json({ foodPartner: partner });
+  } catch (e) {
+    return res.status(400).json({ message: "Unable to load partner profile" });
+  }
+}
+
 module.exports = {
   registerUser,
   loginUser,
@@ -149,4 +167,5 @@ module.exports = {
   loginFoodPartner,
   logoutFoodPartner,
   getFoodPartnerProfile,
+  getCurrentFoodPartner,
 };

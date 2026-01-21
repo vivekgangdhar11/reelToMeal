@@ -28,4 +28,12 @@ async function getFoodItems(req, res) {
   });
 }
 
-module.exports = { createFood, getFoodItems };
+async function getFoodItemsForPartner(req, res) {
+  const partnerId = req.foodPartner?._id;
+  const foodItems = await foodModel.find({ foodPartner: partnerId });
+  res.status(200).json({
+    foodItems,
+  });
+}
+
+module.exports = { createFood, getFoodItems, getFoodItemsForPartner };

@@ -15,5 +15,10 @@ router.post(
   foodController.createFood,
 );
 
-router.get("/",authMiddleware.authUserMiddleware, foodController.getFoodItems);
+router.get("/", authMiddleware.authUserMiddleware, foodController.getFoodItems);
+router.get(
+  "/my",
+  authMiddleware.authFoodPartnerMiddleware,
+  foodController.getFoodItemsForPartner,
+);
 module.exports = router;

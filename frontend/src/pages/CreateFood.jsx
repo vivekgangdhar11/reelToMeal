@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const CreateFood = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [video, setVideo] = useState(null);
@@ -63,6 +66,39 @@ const CreateFood = () => {
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "1rem" }}>
+      {/* Top-right logout button for Food Partner */}
+      <button
+        onClick={async () => {
+          try {
+            await axios.get(
+              "http://localhost:3000/api/auth/foodpartner/logout",
+              {
+                withCredentials: true,
+              },
+            );
+          } catch (e) {
+            // ignore errors
+          }
+          try {
+            localStorage.removeItem("foodPartner");
+          } catch (e) {}
+          navigate("/food-partner/login");
+        }}
+        style={{
+          position: "fixed",
+          top: 12,
+          right: 12,
+          padding: "0.5rem 0.75rem",
+          background: "#ef4444",
+          color: "#fff",
+          border: "none",
+          borderRadius: 6,
+          cursor: "pointer",
+          zIndex: 50,
+        }}
+      >
+        Logout
+      </button>
       <h1 style={{ marginBottom: "1rem" }}>Create Food</h1>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "0.75rem" }}>

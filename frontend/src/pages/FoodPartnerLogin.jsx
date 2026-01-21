@@ -6,27 +6,36 @@ import { useNavigate } from "react-router-dom";
 
 const FoodPartnerLogin = () => {
   const navigate = useNavigate();
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const form=e.target;
-    const formdata={
-      email:form.email.value,
-      password:form.password.value
+    const form = e.target;
+    const formdata = {
+      email: form.email.value,
+      password: form.password.value,
     };
     try {
       const response = await axios.post(
         "http://localhost:3000/api/auth/foodpartner/login",
         formdata,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log("Login successful:", response.data);
+      // Persist basic partner info for later use (optional)
+      if (response?.data?.foodPartner) {
+        try {
+          localStorage.setItem(
+            "foodPartner",
+            JSON.stringify(response.data.foodPartner),
+          );
+        } catch {}
+      }
       // Redirect to dashboard after successful login
-      navigate("/createfood");
+      navigate("/food-partner/dashboard");
     } catch (error) {
       console.error("Error during login:", error);
       // Handle error (e.g., show error message to user)
     }
-  }
+  };
   return (
     <div className="auth-wrap">
       <div className="container">
