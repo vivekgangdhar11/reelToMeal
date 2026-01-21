@@ -6,11 +6,14 @@ async function authFoodPartnerMiddleware(req, res, next) {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(401).json({ message: "Please Login first" });
+    return res.status(401).json({ message: "Please login as food partner" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded || !decoded.foodPartnerId) {
+      return res.status(401).json({ message: "Please login as food partner" });
+    }
     const foodPartner = await foodPartnerModel.findById(decoded.foodPartnerId);
     if (!foodPartner) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -18,7 +21,7 @@ async function authFoodPartnerMiddleware(req, res, next) {
     req.foodPartner = foodPartner;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalied token" });
+    return res.status(401).json({ message: "Invalid token" });
   }
 }
 
@@ -41,4 +44,4 @@ async function authUserMiddleware(req, res, next) {
   }
 }
 
-module.exports = { authFoodPartnerMiddleware , authUserMiddleware};
+module.exports = { authFoodPartnerMiddleware, authUserMiddleware };
