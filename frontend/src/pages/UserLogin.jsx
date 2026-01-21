@@ -21,7 +21,7 @@ const UserLogin = () => {
         { withCredentials: true },
       );
       console.log("Login successful:", response.data);
-      navigate("/");
+      navigate("/reels");
     } catch (error) {
       console.error("Login failed:", error.response.data);
     }

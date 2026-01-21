@@ -18,11 +18,11 @@ const UserRegister = () => {
       const response = await axios.post(
         "http://localhost:3000/api/auth/user/register",
         formData,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log("Registration successful:", response.data);
       // You can redirect the user or show a success message here
-      navigate("/");
+      navigate("/reels");
     } catch (error) {
       console.error("Registration failed:", error.response.data);
       // You can show an error message to the user here

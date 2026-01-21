@@ -65,7 +65,7 @@ async function logoutUser(req, res) {
 }
 
 async function registerFoodPartner(req, res) {
-  const { name, email, password ,phone,contactName,address} = req.body;
+  const { name, email, password, phone, contactName, address } = req.body;
   const isPartnerExist = await foodPartnerModel.findOne({ email: email });
   if (isPartnerExist) {
     return res.status(400).json({ message: "Food partner already exists" });
@@ -77,8 +77,7 @@ async function registerFoodPartner(req, res) {
     password: hashedPassword,
     phone,
     contactName,
-    address
-
+    address,
   });
   const token = jwt.sign(
     { foodPartnerId: foodPartner._id },
@@ -93,7 +92,7 @@ async function registerFoodPartner(req, res) {
       name: foodPartner.name,
       phone: foodPartner.phone,
       contactName: foodPartner.contactName,
-      address: foodPartner.address
+      address: foodPartner.address,
     },
   });
 }
@@ -128,4 +127,26 @@ function logoutFoodPartner(req, res) {
   res.status(200).json({ message: "Logout successful" });
 }
 
-module.exports = { registerUser, loginUser, logoutUser, registerFoodPartner, loginFoodPartner, logoutFoodPartner };
+// Public store profile by ID (no password)
+async function getFoodPartnerProfile(req, res) {
+  try {
+    const { id } = req.params;
+    const partner = await foodPartnerModel.findById(id).select("-password");
+    if (!partner) {
+      return res.status(404).json({ message: "Store not found" });
+    }
+    return res.status(200).json({ foodPartner: partner });
+  } catch (e) {
+    return res.status(400).json({ message: "Invalid store id" });
+  }
+}
+
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  registerFoodPartner,
+  loginFoodPartner,
+  logoutFoodPartner,
+  getFoodPartnerProfile,
+};

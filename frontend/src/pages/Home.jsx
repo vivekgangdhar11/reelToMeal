@@ -13,8 +13,6 @@ const Home = () => {
   // Fetch videos
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
-    setError("");
     axios
       .get("http://localhost:3000/api/food", { withCredentials: true })
       .then((res) => {
@@ -126,10 +124,23 @@ const Home = () => {
               <h3 className="reel-title">{item.name}</h3>
               <p className="reel-desc">{item.description}</p>
 
-              {/* foodPartner is an ObjectId string in responses */}
-              <Link to={`/food-partner/login`} className="reel-cta">
-                Visit Store
-              </Link>
+              {/* Navigate to partner profile with partnerId */}
+              {item.foodPartner ? (
+                <Link
+                  to={`/food-partner/profile/${item.foodPartner}`}
+                  className="reel-cta"
+                >
+                  Visit Store
+                </Link>
+              ) : (
+                <span
+                  className="reel-cta"
+                  aria-disabled="true"
+                  style={{ opacity: 0.6, pointerEvents: "none" }}
+                >
+                  Visit Store
+                </span>
+              )}
             </div>
           </div>
         </section>

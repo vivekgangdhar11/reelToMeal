@@ -1,16 +1,54 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import axios from "axios";
 
 // Profile layout using theme.css variables and utilities
 const Profile = () => {
-  // Static demo data; wire real data later
-  const business = {
-    name: "Business Name",
-    address: "123 Main Street",
-    totalMeals: 43,
-    customersServed: "15K",
-  };
+  const { partnerId } = useParams();
+  const [partner, setPartner] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [error, setError] = useState("");
 
-  const placeholders = Array.from({ length: 9 }, (_, i) => `video-${i + 1}`);
+  // Fetch partner details
+  useEffect(() => {
+    let mounted = true;
+    axios
+      .get(`http://localhost:3000/api/auth/foodpartner/${partnerId}`)
+      .then((res) => {
+        if (!mounted) return;
+        setPartner(res.data?.foodPartner || null);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setError("Failed to load store profile.");
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [partnerId]);
+
+  // Fetch all videos and filter by partnerId (requires logged-in user)
+  useEffect(() => {
+    let mounted = true;
+    axios
+      .get("http://localhost:3000/api/food", { withCredentials: true })
+      .then((res) => {
+        if (!mounted) return;
+        const items = res.data?.foodItems || [];
+        setVideos(
+          items.filter((f) => String(f.foodPartner) === String(partnerId)),
+        );
+      })
+      .catch(() => {
+        if (!mounted) return;
+        // Keep error minimal; partner info may still render
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [partnerId]);
+
+  const totalMeals = useMemo(() => videos.length, [videos]);
 
   return (
     <div className="container" style={{ paddingTop: 16, paddingBottom: 24 }}>
@@ -47,7 +85,7 @@ const Profile = () => {
                 fontWeight: 600,
               }}
             >
-              {business.name}
+              {partner ? partner.name : "Loading…"}
             </button>
             <button
               style={{
@@ -59,7 +97,7 @@ const Profile = () => {
                 fontWeight: 600,
               }}
             >
-              {business.address}
+              {partner?.address || ""}
             </button>
           </div>
         </div>
@@ -76,13 +114,13 @@ const Profile = () => {
           <div style={{ textAlign: "center" }}>
             <div style={{ color: "var(--color-muted)" }}>total meals</div>
             <div style={{ fontSize: "1.25rem", fontWeight: 700 }}>
-              {business.totalMeals}
+              {totalMeals}
             </div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ color: "var(--color-muted)" }}>customer serve</div>
+            <div style={{ color: "var(--color-muted)" }}>Phone No</div>
             <div style={{ fontSize: "1.25rem", fontWeight: 700 }}>
-              {business.customersServed}
+              {partner?.phone || ""}
             </div>
           </div>
         </div>
@@ -106,23 +144,43 @@ const Profile = () => {
           marginTop: 12,
         }}
       >
-        {placeholders.map((key) => (
+        {videos.map((item) => (
           <div
-            key={key}
+            key={item._id}
             style={{
               background: "var(--color-border)",
               borderRadius: "var(--radius-sm)",
               aspectRatio: "1 / 1",
+              overflow: "hidden",
               display: "grid",
               placeItems: "center",
-              color: "var(--color-text)",
-              fontWeight: 600,
             }}
+            title={item.name}
           >
-            video
+            <video
+              src={item.video}
+              muted
+              loop
+              playsInline
+              autoPlay
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </div>
         ))}
       </div>
+
+      {error && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ color: "#b00020" }}>{error}</div>
+          <Link
+            to="/"
+            className="reel-cta"
+            style={{ marginTop: 8, display: "inline-block" }}
+          >
+            Back to Home
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
