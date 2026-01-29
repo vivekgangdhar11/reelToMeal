@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/auth.css";
 import axios from "axios";
@@ -6,9 +6,17 @@ import { useNavigate } from "react-router-dom";
 
 const FoodPartnerRegister = () => {
   const navigate = useNavigate();
-  const handleSubmit = async(e) => {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const isPasswordStrong = (p) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(p);
+  const isAlphaText = (t) => /^[A-Za-z ]+$/.test(t.trim());
+  const isDigitsPhone = (p) => /^[0-9]{7,15}$/.test(p.trim());
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
+    setError("");
+    setLoading(true);
     const formData = {
       name: form.brand.value,
       email: form.email.value,
@@ -18,22 +26,48 @@ const FoodPartnerRegister = () => {
       address: form.address.value,
     };
     console.log("Food Partner Registration form data:", formData);
+    // Client-side validations
+    if (!isAlphaText(formData.name)) {
+      setError("Business/Brand name must contain only letters and spaces.");
+      setLoading(false);
+      return;
+    }
+    if (!isAlphaText(formData.contactName)) {
+      setError("Contact name must contain only letters and spaces.");
+      setLoading(false);
+      return;
+    }
+    if (!isDigitsPhone(formData.phone)) {
+      setError("Phone must contain only digits (7–15).");
+      setLoading(false);
+      return;
+    }
+    if (!isPasswordStrong(formData.password)) {
+      setError(
+        "Password must be at least 8 characters and include uppercase, lowercase, and a number.",
+      );
+      setLoading(false);
+      return;
+    }
     // Here you would typically send formData to the backend API
     try {
       const response = await axios.post(
         "http://localhost:3000/api/auth/foodpartner/register",
         formData,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log("Registration successful:", response.data);
       // Redirect to login page or dashboard after successful registration
       navigate("/createfood");
     } catch (error) {
-      console.error("Error during registration:", error);
-      // Handle error (e.g., show error message to user)
+      const message =
+        error?.response?.data?.message || "Food partner already exists";
+      console.error("Error during registration:", message);
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-    
-  }
+  };
   return (
     <div className="auth-wrap">
       <div className="container">
@@ -42,6 +76,23 @@ const FoodPartnerRegister = () => {
             <h1 className="auth-title">Register as Food Partner</h1>
             <p className="auth-subtitle">Grow with our partner network</p>
           </header>
+
+          {error ? (
+            <div
+              role="alert"
+              style={{
+                marginBottom: "16px",
+                padding: "12px 14px",
+                borderRadius: "8px",
+                border: "1px solid #fecaca",
+                background: "#fef2f2",
+                color: "#b91c1c",
+                fontSize: "0.95rem",
+              }}
+            >
+              {error}
+            </div>
+          ) : null}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="field">
@@ -56,6 +107,9 @@ const FoodPartnerRegister = () => {
                 placeholder="Your Restaurant"
                 autoComplete="organization"
                 required
+                pattern="[A-Za-z ]+"
+                title="Use letters and spaces only"
+                onInput={() => error && setError("")}
               />
             </div>
 
@@ -71,6 +125,7 @@ const FoodPartnerRegister = () => {
                 placeholder="contact@restaurant.com"
                 autoComplete="email"
                 required
+                onInput={() => error && setError("")}
               />
             </div>
 
@@ -86,6 +141,7 @@ const FoodPartnerRegister = () => {
                 placeholder="Create a password"
                 autoComplete="new-password"
                 required
+                onInput={() => error && setError("")}
               />
             </div>
 
@@ -101,6 +157,9 @@ const FoodPartnerRegister = () => {
                 placeholder="Primary contact person"
                 autoComplete="name"
                 required
+                pattern="[A-Za-z ]+"
+                title="Use letters and spaces only"
+                onInput={() => error && setError("")}
               />
             </div>
 
@@ -116,6 +175,10 @@ const FoodPartnerRegister = () => {
                 placeholder="e.g., +1 555 123 4567"
                 autoComplete="tel"
                 required
+                inputMode="numeric"
+                pattern="[0-9]{7,15}"
+                title="Digits only, 7–15 characters"
+                onInput={() => error && setError("")}
               />
             </div>
 
@@ -130,12 +193,13 @@ const FoodPartnerRegister = () => {
                 placeholder="Street, City, State, ZIP"
                 rows={3}
                 required
+                onInput={() => error && setError("")}
               />
             </div>
 
             <div className="actions">
-              <button className="btn" type="submit">
-                Create Partner Account
+              <button className="btn" type="submit" disabled={loading}>
+                {loading ? "Creating..." : "Create Partner Account"}
               </button>
               <p className="muted-link">
                 Already a partner? <Link to="/food-partner/login">Sign in</Link>

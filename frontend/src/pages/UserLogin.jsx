@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/auth.css";
 import { useNavigate } from "react-router-dom";
@@ -6,9 +6,13 @@ import axios from "axios";
 
 const UserLogin = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
+    setError("");
+    setLoading(true);
     const formData = {
       email: form.email.value,
       password: form.password.value,
@@ -23,7 +27,12 @@ const UserLogin = () => {
       console.log("Login successful:", response.data);
       navigate("/reels");
     } catch (error) {
-      console.error("Login failed:", error.response.data);
+      const message =
+        error?.response?.data?.message || "Invalid email or password";
+      console.error("Login failed:", message);
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -34,6 +43,23 @@ const UserLogin = () => {
             <h1 className="auth-title">User Login</h1>
             <p className="auth-subtitle">Welcome back, sign in to continue</p>
           </header>
+
+          {error ? (
+            <div
+              role="alert"
+              style={{
+                marginBottom: "16px",
+                padding: "12px 14px",
+                borderRadius: "8px",
+                border: "1px solid #fecaca",
+                background: "#fef2f2",
+                color: "#b91c1c",
+                fontSize: "0.95rem",
+              }}
+            >
+              {error}
+            </div>
+          ) : null}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="field">
@@ -48,6 +74,7 @@ const UserLogin = () => {
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
+                onInput={() => error && setError("")}
               />
             </div>
 
@@ -63,12 +90,13 @@ const UserLogin = () => {
                 placeholder="••••••••"
                 autoComplete="current-password"
                 required
+                onInput={() => error && setError("")}
               />
             </div>
 
             <div className="actions">
-              <button className="btn" type="submit">
-                Sign In
+              <button className="btn" type="submit" disabled={loading}>
+                {loading ? "Signing in..." : "Sign In"}
               </button>
               <p className="muted-link">
                 New here? <Link to="/user/register">Create an account</Link>

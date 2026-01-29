@@ -21,4 +21,10 @@ router.get(
   authMiddleware.authFoodPartnerMiddleware,
   foodController.getFoodItemsForPartner,
 );
+// Toggle like for a food item (user)
+router.post(
+  "/:id/like",
+  authMiddleware.authUserMiddleware,
+  foodController.toggleLike,
+);
 module.exports = router;

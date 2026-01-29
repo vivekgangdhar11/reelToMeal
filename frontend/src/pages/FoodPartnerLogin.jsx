@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/auth.css";
 import axios from "axios";
@@ -6,9 +6,13 @@ import { useNavigate } from "react-router-dom";
 
 const FoodPartnerLogin = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
+    setError("");
+    setLoading(true);
     const formdata = {
       email: form.email.value,
       password: form.password.value,
@@ -32,8 +36,12 @@ const FoodPartnerLogin = () => {
       // Redirect to dashboard after successful login
       navigate("/food-partner/dashboard");
     } catch (error) {
-      console.error("Error during login:", error);
-      // Handle error (e.g., show error message to user)
+      const message =
+        error?.response?.data?.message || "Invalid email or password";
+      console.error("Error during login:", message);
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -44,6 +52,23 @@ const FoodPartnerLogin = () => {
             <h1 className="auth-title">Food Partner Login</h1>
             <p className="auth-subtitle">Access your partner dashboard</p>
           </header>
+
+          {error ? (
+            <div
+              role="alert"
+              style={{
+                marginBottom: "16px",
+                padding: "12px 14px",
+                borderRadius: "8px",
+                border: "1px solid #fecaca",
+                background: "#fef2f2",
+                color: "#b91c1c",
+                fontSize: "0.95rem",
+              }}
+            >
+              {error}
+            </div>
+          ) : null}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="field">
@@ -58,6 +83,7 @@ const FoodPartnerLogin = () => {
                 placeholder="you@restaurant.com"
                 autoComplete="email"
                 required
+                onInput={() => error && setError("")}
               />
             </div>
 
@@ -73,12 +99,13 @@ const FoodPartnerLogin = () => {
                 placeholder="••••••••"
                 autoComplete="current-password"
                 required
+                onInput={() => error && setError("")}
               />
             </div>
 
             <div className="actions">
-              <button className="btn" type="submit">
-                Sign In
+              <button className="btn" type="submit" disabled={loading}>
+                {loading ? "Signing in..." : "Sign In"}
               </button>
               <p className="muted-link">
                 New partner?{" "}

@@ -158,6 +158,44 @@ const Home = () => {
               <h3 className="reel-title">{item.name}</h3>
               <p className="reel-desc">{item.description}</p>
 
+              {/* Like button */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  marginBottom: 12,
+                }}
+              >
+                <button
+                  className="reel-cta"
+                  onClick={async () => {
+                    try {
+                      const res = await axios.post(
+                        `http://localhost:3000/api/food/${item._id}/like`,
+                        {},
+                        { withCredentials: true },
+                      );
+                      const { liked, likeCount } = res.data || {};
+                      setVideos((prev) =>
+                        prev.map((v) =>
+                          v._id === item._id ? { ...v, liked, likeCount } : v,
+                        ),
+                      );
+                    } catch (e) {
+                      console.error("Like toggle failed", e);
+                    }
+                  }}
+                  aria-pressed={!!item.liked}
+                  style={{
+                    background: item.liked ? "#f59e0b" : undefined,
+                  }}
+                >
+                  {item.liked ? "Liked" : "Like"}
+                </button>
+                <span style={{ color: "#fff" }}>{item.likeCount || 0}</span>
+              </div>
+
               {/* Navigate to partner profile with partnerId */}
               {item.foodPartner ? (
                 <Link
